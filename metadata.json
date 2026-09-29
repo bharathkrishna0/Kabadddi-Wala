@@ -1,0 +1,6 @@
+{
+  "name": "ReclaimX",
+  "description": "A trust and intelligence layer for informal e-waste collection with offline-first signed receipts, fair-price discovery, and authorized recycler matching.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
