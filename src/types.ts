@@ -1,6 +1,6 @@
 export type Language = 'mr' | 'hi' | 'en';
 
-export type ViewPersona = 'collector' | 'recycler' | 'admin';
+export type ViewPersona = 'collector' | 'recycler' | 'admin' | 'authority' | 'citizen';
 
 export type ScreenId =
   | 'welcome'
@@ -22,7 +22,10 @@ export type ScreenId =
   | 'safety'
   | 'offline_explain'
   | 'sync_state'
-  | 'profile';
+  | 'profile'
+  | 'my_impact'
+  | 'national_heatmap'
+  | 'citizen_trace';
 
 export interface CollectorProfile {
   id: string;
@@ -89,6 +92,7 @@ export interface LotTransaction {
   recyclerId: string;
   recyclerName: string;
   recyclerVerified: boolean;
+  isFormalRecycler?: boolean;
   status: 'draft' | 'priced' | 'signed' | 'confirmed' | 'paid';
   createdAt: string;
   confirmedAt?: string;
@@ -96,10 +100,16 @@ export interface LotTransaction {
   recyclerSignatureHash?: string;
   photoHash: string;
   traceabilityId: string;
+  eprTokenId?: string;
   synced: boolean;
   isFlaggedDiscrepancy?: boolean;
   weightDifferenceKg?: number;
   location: string;
+  // Geographic dimensions for national intelligence
+  districtCode: string; // e.g. 'IN-MH-PU'
+  districtName: string; // e.g. 'Pune'
+  stateCode: string; // e.g. 'MH'
+  citizenReceiptId?: string; // Links to citizen if originated from household
 }
 
 export interface PricePoint {
@@ -114,4 +124,127 @@ export interface StructuredDatasetInfo {
   description: string;
   fields: string[];
   roleInIntelligence: string;
+}
+
+// ----------------------------------------------------
+// FEATURE 8 & 10: ANALYTICS, HEATMAP & IMPACT TYPES
+// ----------------------------------------------------
+
+export type HeatmapMetric =
+  | 'formal_route_pct'
+  | 'kg_collected'
+  | 'unserved_score'
+  | 'critical_material_kg'
+  | 'leakage_risk_pct';
+
+export interface DistrictMetrics {
+  districtCode: string;
+  districtName: string;
+  stateCode: string;
+  coordinates: [number, number]; // [lat, lng]
+  totalTrackedKg: number;
+  verifiedFormalKg: number;
+  formalRoutePct: number; // 0 to 100
+  estimatedAnnualGenerationKg: number;
+  formalVsEstimatedPct: number;
+  materialComposition: {
+    materialId: string;
+    materialName: string;
+    kg: number;
+    pct: number;
+  }[];
+  avgRealisedPricePerKg: number;
+  benchmarkPricePerKg: number;
+  registeredRecyclersCount: number;
+  activeCollectorsCount: number;
+  recyclerCapacityMtYear: number;
+  recyclerUtilizationPct: number;
+  unservedScore: number; // 0 (well served) to 100 (critical deficit)
+  criticalMaterialsRecoverableKg: {
+    copperKg: number;
+    goldGrams: number;
+    cobaltKg: number;
+    lithiumKg: number;
+  };
+  leakageSignals: {
+    unverifiedLotsCount: number;
+    weightDiscrepancyKg: number;
+    leakageRiskLevel: 'LOW' | 'ELEVATED' | 'HIGH';
+    leakageRatePct: number;
+  };
+  circularityScore: number; // 0 to 100
+  isSuppressed: boolean; // Privacy threshold suppression (< 5 transactions)
+  totalTransactionsCount: number;
+}
+
+export interface PolicyInsight {
+  id: string;
+  districtCode: string;
+  category: 'INFRASTRUCTURE' | 'PRICING' | 'HAZARD' | 'AWARENESS';
+  severity: 'INFO' | 'OPPORTUNITY' | 'URGENT';
+  title: { en: string; hi: string; mr: string };
+  description: { en: string; hi: string; mr: string };
+  recommendedAction: { en: string; hi: string; mr: string };
+  triggerRule: string;
+}
+
+export interface CircularityScoreBreakdown {
+  overallScore: number; // 0 - 100
+  tier: 'Emerging' | 'Developing' | 'Progressive' | 'Leader';
+  components: {
+    formalRouteShare: { score: number; weight: number; value: number }; // 35% weight
+    verifiedTransactionRate: { score: number; weight: number; value: number }; // 25% weight
+    hazardousSafeChannelling: { score: number; weight: number; value: number }; // 20% weight
+    materialRecoveryYield: { score: number; weight: number; value: number }; // 20% weight
+  };
+  benchmarkComparison: string;
+}
+
+export interface PersonalImpactSummary {
+  collectorId: string;
+  totalFormallyChannelledKg: number;
+  verifiedTransactionsCount: number;
+  batteriesSafelyChannelledKg: number;
+  pcbRecoveredKg: number;
+  recoveredMaterials: {
+    name: string;
+    estimatedMinKg: number;
+    estimatedMaxKg: number;
+    isCritical: boolean;
+  }[];
+  landfillDiversionLiters: number;
+  co2SavedKg: number;
+  toxicNeutralizedGrams: number;
+  additionalEarningsInr: number; // Verified price - local baseline rate
+  hasRealBaseline: boolean;
+  levelTitle: { en: string; hi: string; mr: string };
+  levelNumber: number;
+  nextLevelProgressPct: number;
+  badges: {
+    id: string;
+    title: { en: string; hi: string; mr: string };
+    description: { en: string; hi: string; mr: string };
+    icon: string;
+    earnedDate: string;
+  }[];
+}
+
+export interface CitizenHandoverRecord {
+  id: string;
+  itemType: string;
+  itemCategory: string;
+  weightKg: number;
+  date: string;
+  collectorName: string;
+  recyclerName: string;
+  status: 'handed_over' | 'verified_at_facility' | 'recovered_into_raw_materials';
+  lifecycleSteps: {
+    step: string;
+    time: string;
+    completed: boolean;
+    location: string;
+  }[];
+  personalDiversionCo2Kg: number;
+  toxicChemicalsKeptFromWaterGrams: number;
+  traceToken: string;
 }

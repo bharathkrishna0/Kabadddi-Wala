@@ -82,6 +82,9 @@ export interface Translations {
   paid: string;
   pending: string;
   localPriceBoard: string;
+  myCircularImpact: string;
+  nationalHeatmap: string;
+  citizenTrace: string;
   navHome: string;
   navSell: string;
   navHistory: string;
@@ -171,6 +174,9 @@ export const translations: Record<Language, Translations> = {
     paid: 'मिळालेले पैसे',
     pending: 'बाकी पैसे',
     localPriceBoard: 'स्थानिक दर फलक',
+    myCircularImpact: 'माझा वर्तुळाकार प्रभाव',
+    nationalHeatmap: 'राष्ट्रीय ई-कचरा हीटमॅप',
+    citizenTrace: 'नागरिक कचरा ट्रॅकर',
     navHome: 'मुख्य',
     navSell: 'विक्री',
     navHistory: 'इतिहास',
@@ -258,6 +264,9 @@ export const translations: Record<Language, Translations> = {
     paid: 'प्राप्त भुगतान',
     pending: 'लंबित भुगतान',
     localPriceBoard: 'स्थानीय दाम सूची',
+    myCircularImpact: 'मेरा चक्रीय प्रभाव',
+    nationalHeatmap: 'राष्ट्रीय ई-कचरा हीटमैप',
+    citizenTrace: 'नागरिक कचरा ट्रैकर',
     navHome: 'होम',
     navSell: 'बेचें',
     navHistory: 'इतिहास',
@@ -345,6 +354,9 @@ export const translations: Record<Language, Translations> = {
     paid: 'Paid',
     pending: 'Pending',
     localPriceBoard: 'Local price board',
+    myCircularImpact: 'My Circular Impact',
+    nationalHeatmap: 'National E-Waste Heatmap',
+    citizenTrace: 'Citizen E-Waste Tracker',
     navHome: 'Home',
     navSell: 'Sell',
     navHistory: 'History',

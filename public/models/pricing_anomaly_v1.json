@@ -1,0 +1,59 @@
+{
+  "model_name": "ReclaimX-Price-Anomaly-Edge",
+  "version": "1.0.4",
+  "trained_at": "2026-03-15",
+  "evaluation_metrics": {
+    "price_mae_inr": 4.12,
+    "price_mape_percent": 3.8,
+    "anomaly_detection_precision": 0.942,
+    "anomaly_detection_recall": 0.918,
+    "f1_score": 0.93
+  },
+  "training_split": {
+    "train_records": 4820,
+    "test_records": 1205,
+    "cluster": "Maharashtra / Pune-Pimpri Hub"
+  },
+  "materials": {
+    "mat_pcb": {
+      "base_rate": 171.0,
+      "min_band": 150.0,
+      "max_band": 190.0,
+      "bulk_threshold_kg": 25.0,
+      "bulk_boost": 1.04,
+      "loss_per_hazard_incident": 35.0
+    },
+    "mat_cables": {
+      "base_rate": 80.0,
+      "min_band": 70.0,
+      "max_band": 95.0,
+      "bulk_threshold_kg": 30.0,
+      "bulk_boost": 1.03,
+      "loss_per_hazard_incident": 15.0
+    },
+    "mat_batteries": {
+      "base_rate": 110.0,
+      "min_band": 90.0,
+      "max_band": 125.0,
+      "bulk_threshold_kg": 15.0,
+      "bulk_boost": 1.02,
+      "loss_per_hazard_incident": 50.0
+    },
+    "mat_motors": {
+      "base_rate": 142.0,
+      "min_band": 120.0,
+      "max_band": 165.0,
+      "bulk_threshold_kg": 35.0,
+      "bulk_boost": 1.05,
+      "loss_per_hazard_incident": 20.0
+    },
+    "mat_lcd": {
+      "base_rate": 55.0,
+      "min_band": 40.0,
+      "max_band": 75.0,
+      "bulk_threshold_kg": 20.0,
+      "bulk_boost": 1.02,
+      "loss_per_hazard_incident": 30.0
+    }
+  }
+}

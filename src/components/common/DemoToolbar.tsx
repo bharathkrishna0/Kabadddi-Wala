@@ -45,8 +45,9 @@ export const DemoToolbar: React.FC<DemoToolbarProps> = ({
     { id: 'earnings', label: '13. Earnings & Ledger', stage: 'Records' },
     { id: 'price_board', label: '14. Local Price Board & 30d Trend', stage: 'Market' },
     { id: 'safety', label: '15. Safety Guidelines', stage: 'Guidance' },
-    { id: 'offline_explain', label: '16. Offline Resilience Guarantee', stage: 'System' },
-    { id: 'sync_state', label: '17. Online Sync Flow', stage: 'System' },
+    { id: 'my_impact', label: '16. My Circular Impact & Badges', stage: 'Impact' },
+    { id: 'offline_explain', label: '17. Offline Resilience Guarantee', stage: 'System' },
+    { id: 'sync_state', label: '18. Online Sync Flow', stage: 'System' },
   ];
 
   return (

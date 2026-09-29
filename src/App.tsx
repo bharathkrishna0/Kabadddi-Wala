@@ -13,6 +13,8 @@ import { generateLotId, generateTraceabilityId, signReceiptOffline, generateHash
 import { TopBar } from './components/common/TopBar';
 import { BottomNav } from './components/common/BottomNav';
 import { DemoToolbar } from './components/common/DemoToolbar';
+import { ReclaimAiChat } from './components/common/ReclaimAiChat';
+import { Sparkles } from 'lucide-react';
 
 // Collector Screens
 import { WelcomeScreen } from './components/collector/WelcomeScreen';
@@ -38,14 +40,18 @@ import { SyncStateScreen } from './components/collector/SyncStateScreen';
 // Alternative Portals
 import { RecyclerPortal } from './components/recycler/RecyclerPortal';
 import { DataFlywheelView } from './components/admin/DataFlywheelView';
+import { NationalHeatmapView } from './components/heatmap/NationalHeatmapView';
+import { CollectorImpactView } from './components/impact/CollectorImpactView';
+import { CitizenImpactView } from './components/impact/CitizenImpactView';
 
 export default function App() {
   // App-level state
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('home');
   const [currentLanguage, setCurrentLanguage] = useState<Language>('mr');
   const [activePersona, setActivePersona] = useState<ViewPersona>('collector');
-  const [isOffline, setIsOffline] = useState(true); // Default to offline simulation to show offline-first capability!
+  const [isOffline, setIsOffline] = useState(true); // Default to offline simulation
   const [isDemoMenuOpen, setIsDemoMenuOpen] = useState(false);
+  const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
 
   // Profile
   const [profile, setProfile] = useState<CollectorProfile>({
@@ -118,16 +124,16 @@ export default function App() {
     setCurrentScreen('signed_qr');
   };
 
-  // Recycler confirms handover
-  const handleRecyclerConfirmed = (verifiedWeightKg: number, finalPrice: number) => {
-    const delta = Math.round((verifiedWeightKg - currentWeightKg) * 10) / 10;
+  // Recycler scan & confirmation
+  const handleRecyclerConfirmed = (verifiedWeight: number, finalPrice: number) => {
+    const isDiscrepancy = Math.abs(verifiedWeight - currentWeightKg) > 1.0;
     const newTx: LotTransaction = {
       id: `tx_${Date.now()}`,
       lotCode: currentLotCode,
       materialId: currentMaterial.id,
       materialName: currentMaterial.name,
       declaredWeightKg: currentWeightKg,
-      verifiedWeightKg: verifiedWeightKg,
+      verifiedWeightKg: verifiedWeight,
       fairPriceMin: currentMaterial.basePriceMin,
       fairPriceMax: currentMaterial.basePriceMax,
       offeredRatePerKg: selectedRecycler.ratePerKg,
@@ -137,34 +143,42 @@ export default function App() {
       recyclerName: selectedRecycler.name,
       recyclerVerified: selectedRecycler.verified,
       status: 'confirmed',
-      createdAt: '16 Sep 2026, 10:48 AM',
-      confirmedAt: '16 Sep 2026, 11:15 AM',
+      createdAt: 'Today, 10:45 AM',
+      confirmedAt: 'Today, 11:15 AM',
       collectorSignatureHash: signatureData.signature,
-      recyclerSignatureHash: `ED25519:${generateHash(currentLotCode, 'recycler_terminal')}`,
+      recyclerSignatureHash: 'ED25519:7c2b84931a99d10e',
       photoHash: signatureData.photoHash,
       traceabilityId: generateTraceabilityId(),
       synced: !isOffline,
-      weightDifferenceKg: delta,
-      location: 'Pune (Hadapsar)',
+      isFlaggedDiscrepancy: isDiscrepancy,
+      weightDifferenceKg: isDiscrepancy ? Number((verifiedWeight - currentWeightKg).toFixed(1)) : 0,
+      location: 'Pune (Hadapsar Receiving Yard)',
+      districtCode: 'IN-MH-PU',
+      districtName: 'Pune',
+      stateCode: 'MH',
+      isFormalRecycler: selectedRecycler.verified,
+      eprTokenId: `EPR-2026-MH-${Math.floor(1000 + Math.random() * 9000)}`,
     };
 
     setTransactions(prev => [newTx, ...prev]);
     setLastCompletedTransaction(newTx);
+    setSelectedTransactionForDetail(newTx);
     setCurrentScreen('two_party_proof');
   };
 
-  // Recycler portal confirmation helper
-  const handleRecyclerPortalConfirm = (lotId: string, verifiedKg: number) => {
+  // Recycler Portal confirm handler
+  const handleRecyclerPortalConfirm = (lotId: string, verifiedWeight: number) => {
     setTransactions(prev =>
       prev.map(tx => {
         if (tx.id === lotId) {
-          const finalPrice = Math.round(verifiedKg * tx.offeredRatePerKg);
+          const rate = tx.offeredRatePerKg;
           return {
             ...tx,
             status: 'confirmed',
-            verifiedWeightKg: verifiedKg,
-            finalPrice,
-            recyclerSignatureHash: `ED25519:${generateHash(tx.lotCode, 'recycler_terminal')}`,
+            verifiedWeightKg: verifiedWeight,
+            finalPrice: Math.round(rate * verifiedWeight),
+            confirmedAt: 'Just now',
+            recyclerSignatureHash: 'ED25519:7c2b84931a99d10e',
           };
         }
         return tx;
@@ -217,8 +231,53 @@ export default function App() {
           >
             Data Flywheel (AI)
           </button>
+          <button
+            type="button"
+            onClick={() => setActivePersona('authority')}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer transition ${
+              activePersona === 'authority'
+                ? 'bg-[#2F6B4F] text-white'
+                : 'bg-white/10 text-white/80 hover:bg-white/20'
+            }`}
+          >
+            National Heatmap (Gov)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActivePersona('citizen')}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer transition ${
+              activePersona === 'citizen'
+                ? 'bg-[#2F6B4F] text-white'
+                : 'bg-white/10 text-white/80 hover:bg-white/20'
+            }`}
+          >
+            Citizen Trace
+          </button>
         </div>
       </div>
+
+      {/* Authority Persona: National E-Waste Heatmap */}
+      {activePersona === 'authority' && (
+        <NationalHeatmapView
+          transactions={transactions}
+          lang={currentLanguage}
+          onSwitchToCollector={() => setActivePersona('collector')}
+          onOpenAssistant={(q) => {
+            setIsAiAssistantOpen(true);
+          }}
+        />
+      )}
+
+      {/* Citizen Persona: Household Handover Trace */}
+      {activePersona === 'citizen' && (
+        <CitizenImpactView
+          lang={currentLanguage}
+          onSwitchToCollector={() => setActivePersona('collector')}
+          onOpenAssistant={(q) => {
+            setIsAiAssistantOpen(true);
+          }}
+        />
+      )}
 
       {/* Recycler Portal Persona */}
       {activePersona === 'recycler' && (
@@ -238,7 +297,7 @@ export default function App() {
 
       {/* Collector Field Experience (390px mobile-first field tool layout) */}
       {activePersona === 'collector' && (
-        <div className="max-w-[420px] mx-auto min-h-screen bg-[#FBFBF9] border-x border-[#E7E5E0] shadow-sm flex flex-col relative">
+        <div className="max-w-[420px] mx-auto min-h-screen bg-[#FBFBF9] border-x border-[#E7E5E0] shadow-sm flex flex-col relative pb-14">
           {/* Top Bar */}
           <TopBar
             currentLanguage={currentLanguage}
@@ -251,12 +310,15 @@ export default function App() {
             onOpenDemoMenu={() => setIsDemoMenuOpen(true)}
           />
 
-          {/* Main Content Viewport */}
-          <main className="flex-1 px-4 pt-3 pb-16 overflow-y-auto">
+          {/* Main Screens Container */}
+          <main className="flex-1 px-4 py-3">
             {currentScreen === 'welcome' && (
               <WelcomeScreen
-                currentLanguage={currentLanguage}
-                onLanguageChange={(lang) => setCurrentLanguage(lang)}
+                selectedLanguage={currentLanguage}
+                onSelectLanguage={(lang) => {
+                  setCurrentLanguage(lang);
+                  setProfile(prev => ({ ...prev, language: lang }));
+                }}
                 onContinue={() => setCurrentScreen('setup')}
               />
             )}
@@ -264,7 +326,7 @@ export default function App() {
             {currentScreen === 'setup' && (
               <QuickSetupScreen
                 profile={profile}
-                onUpdateProfile={(up) => setProfile({ ...profile, ...up })}
+                onUpdateProfile={(p) => setProfile(p)}
                 onComplete={() => setCurrentScreen('home')}
                 lang={currentLanguage}
               />
@@ -276,7 +338,7 @@ export default function App() {
                 transactions={transactions}
                 isOffline={isOffline}
                 lang={currentLanguage}
-                onNavigate={(scr) => setCurrentScreen(scr)}
+                onNavigate={(screen) => setCurrentScreen(screen)}
                 onSelectTransaction={(tx) => {
                   setSelectedTransactionForDetail(tx);
                   setCurrentScreen('transaction_detail');
@@ -295,9 +357,12 @@ export default function App() {
 
             {currentScreen === 'material_confirm' && (
               <MaterialConfirmScreen
+                materials={MATERIALS}
                 selectedMaterial={currentMaterial}
-                onSelectMaterial={(m) => setCurrentMaterial(m)}
-                onContinue={() => setCurrentScreen('weight_entry')}
+                onSelectMaterial={(m) => {
+                  setCurrentMaterial(m);
+                  setCurrentScreen('weight_entry');
+                }}
                 onBack={() => setCurrentScreen('camera')}
                 lang={currentLanguage}
               />
@@ -321,6 +386,7 @@ export default function App() {
                 onContinue={() => setCurrentScreen('recycler_compare')}
                 onBack={() => setCurrentScreen('weight_entry')}
                 lang={currentLanguage}
+                onOpenAssistant={() => setIsAiAssistantOpen(true)}
               />
             )}
 
@@ -339,11 +405,10 @@ export default function App() {
 
             {currentScreen === 'handover_prep' && (
               <HandoverPrepScreen
+                lotCode={currentLotCode}
                 material={currentMaterial}
                 weightKg={currentWeightKg}
-                selectedRecycler={selectedRecycler}
-                lotCode={currentLotCode}
-                profile={profile}
+                recycler={selectedRecycler}
                 onGenerateReceipt={handleGenerateReceipt}
                 onBack={() => setCurrentScreen('recycler_compare')}
                 lang={currentLanguage}
@@ -355,10 +420,11 @@ export default function App() {
                 lotCode={currentLotCode}
                 material={currentMaterial}
                 weightKg={currentWeightKg}
-                selectedRecycler={selectedRecycler}
-                signatureHash={signatureData.signature}
-                onSimulateScan={() => setCurrentScreen('recycler_confirm')}
-                onBack={() => setCurrentScreen('handover_prep')}
+                recycler={selectedRecycler}
+                signature={signatureData.signature}
+                receiptHash={signatureData.receiptHash}
+                onProceedToSimulation={() => setCurrentScreen('recycler_confirm')}
+                onBackToHome={() => setCurrentScreen('home')}
                 lang={currentLanguage}
               />
             )}
@@ -368,8 +434,8 @@ export default function App() {
                 lotCode={currentLotCode}
                 material={currentMaterial}
                 declaredWeightKg={currentWeightKg}
-                selectedRecycler={selectedRecycler}
-                onConfirmFinalHandover={handleRecyclerConfirmed}
+                recycler={selectedRecycler}
+                onConfirmHandover={handleRecyclerConfirmed}
                 onBack={() => setCurrentScreen('signed_qr')}
                 lang={currentLanguage}
               />
@@ -446,7 +512,37 @@ export default function App() {
                 lang={currentLanguage}
               />
             )}
+
+            {currentScreen === 'my_impact' && (
+              <CollectorImpactView
+                profile={profile}
+                transactions={transactions}
+                lang={currentLanguage}
+                onBack={() => setCurrentScreen('home')}
+                onOpenAssistant={(q) => setIsAiAssistantOpen(true)}
+              />
+            )}
+
+            {currentScreen === 'national_heatmap' && (
+              <NationalHeatmapView
+                transactions={transactions}
+                lang={currentLanguage}
+                onSwitchToCollector={() => setCurrentScreen('home')}
+                onOpenAssistant={(q) => setIsAiAssistantOpen(true)}
+              />
+            )}
           </main>
+
+          {/* Floating AI Assistant Trigger (Thumb-reachable on mobile) */}
+          <button
+            type="button"
+            onClick={() => setIsAiAssistantOpen(true)}
+            className="fixed bottom-20 right-4 sm:right-[calc(50%-195px)] z-30 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#2F6B4F] hover:bg-[#25563F] text-white shadow-lg cursor-pointer transition active:scale-95 border-2 border-white"
+            title="Open Reclaim AI Assistant"
+          >
+            <Sparkles className="w-4 h-4 text-emerald-200" />
+            <span className="text-xs font-bold tracking-tight">Reclaim AI</span>
+          </button>
 
           {/* Bottom Navigation */}
           <BottomNav
@@ -456,6 +552,21 @@ export default function App() {
           />
         </div>
       )}
+
+      {/* Trilingual Native Reclaim AI Chat Assistant Panel */}
+      <ReclaimAiChat
+        isOpen={isAiAssistantOpen}
+        onClose={() => setIsAiAssistantOpen(false)}
+        lang={currentLanguage}
+        persona={activePersona}
+        currentMaterial={currentMaterial}
+        currentWeightKg={currentWeightKg}
+        offeredRatePerKg={selectedRecycler.ratePerKg}
+        onNavigateToScreen={(s) => {
+          setIsAiAssistantOpen(false);
+          setCurrentScreen(s);
+        }}
+      />
 
       {/* Demo Replay Toolbar Modal */}
       <DemoToolbar

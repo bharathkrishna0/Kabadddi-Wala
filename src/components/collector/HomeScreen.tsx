@@ -129,39 +129,41 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* Secondary Actions Grid */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
+        <button
+          type="button"
+          onClick={() => onNavigate('my_impact')}
+          className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-[#2F6B4F]/40 hover:bg-[#EAF3EC] cursor-pointer text-center transition shadow-2xs"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#EAF3EC] flex items-center justify-center text-[#2F6B4F] mb-1">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div className="text-xs font-bold text-[#191919]">{t.myCircularImpact}</div>
+          <div className="text-[9px] text-[#2F6B4F] font-semibold">CO₂ & Badges</div>
+        </button>
+
         <button
           type="button"
           onClick={() => onNavigate('price_board')}
-          className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-[#E7E5E0] hover:bg-[#F4F3EF] cursor-pointer text-left transition"
+          className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-[#E7E5E0] hover:bg-[#F4F3EF] cursor-pointer text-center transition shadow-2xs"
         >
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#F4F3EF] flex items-center justify-center text-[#2F6B4F]">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-[#191919]">{t.prices}</div>
-              <div className="text-[10px] text-[#6B6B6B]">Live Local Board</div>
-            </div>
+          <div className="w-8 h-8 rounded-lg bg-[#F4F3EF] flex items-center justify-center text-[#2F6B4F] mb-1">
+            <TrendingUp className="w-4 h-4" />
           </div>
-          <ChevronRight className="w-4 h-4 text-[#6B6B6B]" />
+          <div className="text-xs font-bold text-[#191919]">{t.prices}</div>
+          <div className="text-[9px] text-[#6B6B6B]">Rate Board</div>
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('safety')}
-          className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-[#E7E5E0] hover:bg-[#F4F3EF] cursor-pointer text-left transition"
+          className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-[#E7E5E0] hover:bg-[#F4F3EF] cursor-pointer text-center transition shadow-2xs"
         >
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#FFF4DE] flex items-center justify-center text-[#A66A00]">
-              <ShieldAlert className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-[#191919]">{t.safety}</div>
-              <div className="text-[10px] text-[#6B6B6B]">Handling Rules</div>
-            </div>
+          <div className="w-8 h-8 rounded-lg bg-[#FFF4DE] flex items-center justify-center text-[#A66A00] mb-1">
+            <ShieldAlert className="w-4 h-4" />
           </div>
-          <ChevronRight className="w-4 h-4 text-[#6B6B6B]" />
+          <div className="text-xs font-bold text-[#191919]">{t.safety}</div>
+          <div className="text-[9px] text-[#6B6B6B]">Hazards</div>
         </button>
       </div>
 
